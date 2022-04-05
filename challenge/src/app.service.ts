@@ -55,10 +55,6 @@ export class AppService {
     
   }
 
-  getHello(): string {
-    return 'Hello World!';
-  }
-
   async getPlayer(address: string): Promise<Player> {
 
     try {
@@ -74,12 +70,26 @@ export class AppService {
       });
     }
     catch(error) {
-      throw new HttpException(JSON.stringify(error), HttpStatus.FORBIDDEN);
     }
   }
 
-  getCurrentSegment(): number {
-    return 0;
+  async getCurrentSegment(): Promise<number> {
+
+    try {
+      const blockNumber = await this.contract.provider.getBlockNumber();
+      const timestamp = (await this.contract.provider.getBlock(blockNumber)).timestamp;
+      console.log(`BlockNumber : ${blockNumber}, Block timestamp: ${timestamp}`);
+      
+      const firstSegmentStart = await this.contract.firstSegmentStart();
+      const segmentLength = await this.contract.segmentLength();
+      console.log(`First Segment Start : ${firstSegmentStart}, SegmentLength: ${segmentLength}`);
+
+      const getCurrentSegment = Math.floor((timestamp - firstSegmentStart) / segmentLength);
+      return getCurrentSegment;
+    }
+    catch (error) {
+      throw new HttpException(JSON.stringify(error), HttpStatus.FORBIDDEN);
+    }
   }
 
 

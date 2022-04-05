@@ -14,18 +14,13 @@ export class AppController {
   constructor(private readonly appService: AppService) {
   }
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-
   @Get('player/:address')
   async getPlayer(@Param('address') address) : Promise<Player> {
     return this.appService.getPlayer(address);
   }
 
   @Get('segment')
-  async getCurrentSegment(@Req() request: Request): Promise<number> {
+  async getCurrentSegment(): Promise<number> {
     return this.appService.getCurrentSegment();
   } 
  
