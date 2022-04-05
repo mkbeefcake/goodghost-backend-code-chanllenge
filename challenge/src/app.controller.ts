@@ -3,7 +3,10 @@ import { AppService } from './app.service';
 import { Request } from 'express';
 
 import { Player } from '../entity/player';
-import { Network } from 'nestjs-ethers';
+import { BigNumber, Network } from 'nestjs-ethers';
+import { Param } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 
 
 @Controller()
@@ -16,18 +19,21 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('player')
-  async getPlayer(@Req() request: Request) : Promise<Player> {
-    return this.appService.getPlayer();
+  @Get('player/:address')
+  async getPlayer(@Param('address') address) : Promise<Player> {
+    return this.appService.getPlayer(address);
   }
 
   @Get('segment')
   async getCurrentSegment(@Req() request: Request): Promise<number> {
     return this.appService.getCurrentSegment();
   } 
+ 
 
-  @Get('network')
-  async getNetwork(): Promise<Network> {
-    return this.appService.getNetwork();
+  // test endpoints for nestjs-ethers
+  @Get('join')
+  async join(): Promise<string> {
+    return this.appService.join();
   }
+
 }
