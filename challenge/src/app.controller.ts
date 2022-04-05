@@ -24,8 +24,6 @@ export class AppController {
     return this.appService.getCurrentSegment();
   } 
  
-
-  // test endpoints for nestjs-ethers
   @Get('join')
   async join(): Promise<string> {
     return this.appService.join();

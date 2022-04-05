@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+
 import { Player } from '../entity/player';
 
 import { EthersContract, InjectContractProvider, Contract, Network, InjectSignerProvider, EthersSigner, Wallet, BigNumber } from 'nestjs-ethers';
@@ -6,8 +9,6 @@ import * as ABI from '../abi/ABI-GoodGhostingWhitelisted';
 import * as DAI_ABI from '../abi/ABI-dai';
 
 import * as dotenv from 'dotenv';
-import { HttpException } from '@nestjs/common';
-import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
@@ -70,6 +71,7 @@ export class AppService {
       });
     }
     catch(error) {
+      throw new HttpException(JSON.stringify(error), HttpStatus.FORBIDDEN);
     }
   }
 
@@ -93,7 +95,7 @@ export class AppService {
   }
 
 
-  // not working....
+  // not working yet....
   async join() : Promise<string> {
     const gasPrice : BigNumber =  await this.contract.provider.getGasPrice();
 
