@@ -14,12 +14,12 @@ export class AppController {
   }
 
   @Get('player')
-  getPlayer(@Req() request: Request) : Player {
+  async getPlayer(@Req() request: Request) : Promise<Player> {
     return this.appService.getPlayer();
   }
 
   @Get('segment')
-  getCurrentSegment(@Req() request: Request): number {
+  async getCurrentSegment(@Req() request: Request): Promise<number> {
     return this.appService.getCurrentSegment();
   } 
 }
