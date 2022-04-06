@@ -76,7 +76,7 @@ export class AppService {
         wallet
       );
 
-      console.log("Address: ", address);
+      // console.log("Address: ", address);
       const player = await contract.players(address);    
 
       return new Player ({
@@ -93,6 +93,26 @@ export class AppService {
   }
 
   async getCurrentSegment(): Promise<number> {
+    try {
+      let wallet : Wallet = this.ethersSigner.createWallet(
+        process.env.PRIVATE_KEY,
+      );
+
+      let contract : Contract = this.ethersContract.create(
+        '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
+        ABI.default,
+        wallet
+      );
+
+      const segment: BigNumber = await contract.getCurrentSegment();
+      return segment.toNumber();
+    }
+    catch (error) {
+      throw new HttpException(JSON.stringify(error), HttpStatus.FORBIDDEN);
+    }
+  }
+
+  async calculateSegment(): Promise<number> {
 
     try {
       let wallet : Wallet = this.ethersSigner.createWallet(
@@ -107,11 +127,11 @@ export class AppService {
 
       const blockNumber = await contract.provider.getBlockNumber();
       const timestamp = (await contract.provider.getBlock(blockNumber)).timestamp;
-      console.log(`BlockNumber : ${blockNumber}, Block timestamp: ${timestamp}`);
+      // console.log(`BlockNumber : ${blockNumber}, Block timestamp: ${timestamp}`);
       
       const firstSegmentStart = await contract.firstSegmentStart();
       const segmentLength = await contract.segmentLength();
-      console.log(`First Segment Start : ${firstSegmentStart}, SegmentLength: ${segmentLength}`);
+      // console.log(`First Segment Start : ${firstSegmentStart}, SegmentLength: ${segmentLength}`);
 
       const getCurrentSegment = Math.floor((timestamp - firstSegmentStart) / segmentLength);
       return getCurrentSegment;

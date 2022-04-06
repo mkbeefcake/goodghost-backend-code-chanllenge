@@ -26,12 +26,16 @@ export class AppController {
 
   @Get('segment')
   async getCurrentSegment(): Promise<number> {
-    return this.appService.getCurrentSegment();
+    return this.appService.calculateSegment();
   } 
  
   @Get('join')
   async join(): Promise<string> {
     return this.appService.join();
   }
+
+  async getCurrentSegmentFromContract(): Promise<number> {
+    return this.appService.getCurrentSegment();
+  } 
 
 }

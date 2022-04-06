@@ -1,8 +1,14 @@
 # goodghost-backend-code-chanllenge
 
-## install nest.js
+## install nest.js cli
 npm install -g @nestjs/cli
 
-## test 
+## install dependencies
+npm install
+
+## run dev site
 npm run start:dev
+
+## run jest test
+npm run test
 
