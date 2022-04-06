@@ -2,6 +2,9 @@
 This project is based on NestJS framework, and used Jest as Unit-test framework.
 This contains challenge directory which is jest based backend source code and some documents.
 
+First you have to create .env file inside the challenge directory, copy .env.sample to .env file.
+And the you have to put your private key from your wallet and save it.
+
 Before start to the test, please install nestjs/cli dependencies.
 And change the current directory to challenge directory and install dependnecies. 
 After then you can start backend-dev or start unit-test
