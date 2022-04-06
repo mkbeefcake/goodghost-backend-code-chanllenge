@@ -14,6 +14,11 @@ export class AppController {
   constructor(private readonly appService: AppService) {
   }
 
+  @Get()
+  getHello() : string {
+    return 'Hello World!';
+  }
+
   @Get('player/:address')
   async getPlayer(@Param('address') address) : Promise<Player> {
     return this.appService.getPlayer(address);

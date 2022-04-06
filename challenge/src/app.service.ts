@@ -13,9 +13,12 @@ import * as dotenv from 'dotenv';
 @Injectable()
 export class AppService {
 
-  private wallet: Wallet;
-  private contract: Contract;
-  private daiContract : Contract;
+  private ethersContract : EthersContract;
+  private ethersSigner : EthersSigner;
+
+  // private wallet: Wallet;
+  // private contract: Contract;
+  // private daiContract : Contract;
 
   constructor( 
     @InjectContractProvider()
@@ -25,42 +28,56 @@ export class AppService {
   {
     dotenv.config();
     
-    this.wallet = _signer.createWallet(
-      process.env.PRIVATE_KEY,
-    );
+    this.ethersContract = _contract;
+    this.ethersSigner = _signer;
 
-    this.contract = _contract.create(
-      '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
-      ABI.default,
-      this.wallet
-    );
+    // this.wallet = _signer.createWallet(
+    //   process.env.PRIVATE_KEY,
+    // );
 
-    this.daiContract = _contract.create(
-      '0x04DF6e4121c27713ED22341E7c7Df330F56f289B', // KOVAN DAI CONTRACT
-      DAI_ABI.default,
-      this.wallet
-    );
+    // this.contract = _contract.create(
+    //   '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
+    //   ABI.default,
+    //   this.wallet
+    // );
 
-    this.setEventHandler();
+    // this.daiContract = _contract.create(
+    //   '0x04DF6e4121c27713ED22341E7c7Df330F56f289B', // KOVAN DAI CONTRACT
+    //   DAI_ABI.default,
+    //   this.wallet
+    // );
+
+    // this.setEventHandler();
   }
 
   setEventHandler() {
 
-    this.daiContract.on("Approval", (from, to, value) => {
-      console.log(`DAI Approved: ${from} - ${to} : ${value}`);
-    })
+    // this.daiContract.on("Approval", (from, to, value) => {
+    //   console.log(`DAI Approved: ${from} - ${to} : ${value}`);
+    // })
 
-    this.contract.on("JoinedGame", (from, allowance) => {
-      console.log(`GoodGhosting JoinedGame: ${from} : ${allowance}`);
-    })
+    // this.contract.on("JoinedGame", (from, allowance) => {
+    //   console.log(`GoodGhosting JoinedGame: ${from} : ${allowance}`);
+    // })
     
   }
 
   async getPlayer(address: string): Promise<Player> {
 
     try {
+
+      let wallet : Wallet = this.ethersSigner.createWallet(
+        process.env.PRIVATE_KEY,
+      );
+
+      let contract : Contract = this.ethersContract.create(
+        '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
+        ABI.default,
+        wallet
+      );
+
       console.log("Address: ", address);
-      const player = await this.contract.players(address);    
+      const player = await contract.players(address);    
 
       return new Player ({
         addr: player.addr,
@@ -78,12 +95,22 @@ export class AppService {
   async getCurrentSegment(): Promise<number> {
 
     try {
-      const blockNumber = await this.contract.provider.getBlockNumber();
-      const timestamp = (await this.contract.provider.getBlock(blockNumber)).timestamp;
+      let wallet : Wallet = this.ethersSigner.createWallet(
+        process.env.PRIVATE_KEY,
+      );
+
+      let contract : Contract = this.ethersContract.create(
+        '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
+        ABI.default,
+        wallet
+      );
+
+      const blockNumber = await contract.provider.getBlockNumber();
+      const timestamp = (await contract.provider.getBlock(blockNumber)).timestamp;
       console.log(`BlockNumber : ${blockNumber}, Block timestamp: ${timestamp}`);
       
-      const firstSegmentStart = await this.contract.firstSegmentStart();
-      const segmentLength = await this.contract.segmentLength();
+      const firstSegmentStart = await contract.firstSegmentStart();
+      const segmentLength = await contract.segmentLength();
       console.log(`First Segment Start : ${firstSegmentStart}, SegmentLength: ${segmentLength}`);
 
       const getCurrentSegment = Math.floor((timestamp - firstSegmentStart) / segmentLength);
@@ -97,9 +124,25 @@ export class AppService {
 
   // not working yet....
   async join() : Promise<string> {
-    const gasPrice : BigNumber =  await this.contract.provider.getGasPrice();
+    let wallet : Wallet = this.ethersSigner.createWallet(
+      process.env.PRIVATE_KEY,
+    );
 
-    console.log("Wallet: ", await this.wallet.getAddress());
+    let contract : Contract = this.ethersContract.create(
+      '0xc69a569405EAE312Ca13C2eD85a256FbE4992A35',
+      ABI.default,
+      wallet
+    );
+
+    let daiContract : Contract = this.ethersContract.create(
+      '0x04DF6e4121c27713ED22341E7c7Df330F56f289B', // KOVAN DAI CONTRACT
+      DAI_ABI.default,
+      wallet
+    );
+
+    const gasPrice : BigNumber =  await contract.provider.getGasPrice();
+
+    console.log("Wallet: ", await wallet.getAddress());
     console.log('GasPrice:', gasPrice);
 
     // const estimatedGas: BigNumber = await this.contract.estimateGas.joinGame();
@@ -110,7 +153,7 @@ export class AppService {
 
     // ----------
     // approve dai contract to spend DAI
-    const daiBalance = await this.daiContract.balanceOf(await this.wallet.getAddress());
+    const daiBalance = await daiContract.balanceOf(await wallet.getAddress());
     console.log('current dai: ', daiBalance);
     
     if (daiBalance.lt(BigNumber.from('1000000000000000000'))) {
@@ -118,14 +161,14 @@ export class AppService {
       return Promise.reject("Not enough DAI for this account");
     }
     
-    const tx = await this.daiContract.approve('0xc69a569405EAE312Ca13C2eD85a256FbE4992A35', BigNumber.from('1100000000000000000'));
+    const tx = await daiContract.approve('0xc69a569405EAE312Ca13C2eD85a256FbE4992A35', BigNumber.from('1100000000000000000'));
     console.log('Tx for DAI is created');
     const approval = await tx.wait();
     console.log('Tx for DAI is completed');
 
     // ---------
     // try to join game
-    const txJoin = await this.contract.joinGame({ gasLimit: 2500000, gasPrice: gasPrice});
+    const txJoin = await contract.joinGame({ gasLimit: 2500000, gasPrice: gasPrice});
     console.log('Tx Join is created');
     const join = await txJoin.wait()
     console.log('Tx Join: ', join);
